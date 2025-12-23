@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IdeaJournal – Mind-Blow Mode</title>
+
+<style>
+/* ================= RESET ================= */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:Inter,Segoe UI,sans-serif}
+
+body{
+  background:#05060a;
+  overflow:hidden;
+  color:#fff;
+}
+
+/* ================= STARFIELD ================= */
+canvas{position:fixed;inset:0;z-index:0}
+
+/* ================= HOLOGRAPHIC CURSOR ================= */
+.cursor{
+  position:fixed;width:14px;height:14px;border-radius:50%;
+  background:rgba(59,130,246,.9);
+  box-shadow:0 0 30px rgba(59,130,246,.8);
+  pointer-events:none;z-index:999;
+  transform:translate(-50%,-50%)
+}
+
+/* ================= MAIN WRAP ================= */
+.wrap{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:1fr 420px}
+
+/* ================= LEFT CINEMATIC ================= */
+.hero{padding:80px;display:flex;flex-direction:column;justify-content:center;gap:30px}
+.hero h1{font-size:78px;line-height:1.05;font-weight:900}
+.hero h1 span{
+  background:linear-gradient(90deg,#60a5fa,#22c55e,#a78bfa);
+  background-size:300% 300%;animation:gradient 6s ease infinite;
+  -webkit-background-clip:text;color:transparent
+}
+@keyframes gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero p{font-size:20px;opacity:.85;max-width:520px}
+.glitch{position:relative}
+.glitch::after{content:attr(data-text);position:absolute;left:2px;top:0;color:#22c55e;opacity:.6;animation:glitch 2s infinite}
+@keyframes glitch{0%,100%{clip-path:inset(0 0 0 0)}50%{clip-path:inset(40% 0 20% 0)}}
+
+/* ================= AUTH POD ================= */
+.pod{display:flex;align-items:center;justify-content:center}
+.auth{width:360px;padding:40px;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border-radius:24px;box-shadow:0 0 120px rgba(59,130,246,.25);position:relative}
+.auth::before{content:"";position:absolute;inset:-2px;border-radius:24px;background:linear-gradient(120deg,#60a5fa,#22c55e,#a78bfa);filter:blur(20px);opacity:.4;z-index:-1}
+
+.switch{display:flex;gap:10px;margin-bottom:20px}
+.switch button{flex:1;padding:12px;border-radius:999px;border:none;cursor:pointer;background:#0b1220;color:#fff;transition:.3s}
+.switch button.active{background:#fff;color:#000}
+
+form{display:none;flex-direction:column;gap:16px}
+form.active{display:flex}
+
+input{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff}
+
+.password-wrap{position:relative}
+.password-wrap input{width:100%;padding-right:60px}
+.toggle{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  font-size:12px;color:#7c7cff;opacity:.8
+}
+.toggle:hover{opacity:1}
+
+button.submit{margin-top:10px;padding:14px;border-radius:14px;border:none;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#60a5fa,#22c55e);color:#000}
+
+#errorBox{display:none;margin-bottom:18px;padding:12px 14px;border-radius:12px;font-size:14px;background:rgba(239,68,68,.15);border:1px solid #ef4444;color:#fecaca}
+
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.hero{padding:40px;text-align:center;align-items:center}}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1 class="glitch" data-text="IDEAS">IDEAS<br><span>ARE IMMORTAL</span></h1>
+    <p>This is not a website. This is a place where thoughts survive time.</p>
+  </div>
+
+  <div class="pod">
+    <div class="auth">
+      <div id="errorBox"></div>
+
+      <div class="switch">
+        <button id="lbtn" class="active" onclick="showLogin()">Login</button>
+        <button id="sbtn" onclick="showSignup()">Sign Up</button>
+      </div>
+
+      <!-- LOGIN -->
+      <form id="login" class="active" method="post" action="/login">
+        <input name="username" placeholder="Username" required>
+        <div class="password-wrap">
+          <input type="password" id="loginPassword" name="password" placeholder="Password" required>
+          <button type="button" class="toggle" onclick="togglePassword('loginPassword',this)">Show</button>
+        </div>
+        <button type="submit" class="submit">ENTER</button>
+      </form>
+
+      <!-- SIGNUP -->
+      <form id="signup" method="post" action="/signup">
+        <input name="username" placeholder="Username" required>
+        <div class="password-wrap">
+          <input type="password" id="signupPassword" name="password" placeholder="Password" required>
+          <button type="button" class="toggle" onclick="togglePassword('signupPassword',this)">Show</button>
+        </div>
+        <button type="submit" class="submit">CREATE</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== SHOW / HIDE PASSWORD (ADMIN SAFE) ===== */
+function togglePassword(id,btn){
+  const i=document.getElementById(id);
+  if(i.type==='password'){i.type='text';btn.textContent='Hide'}
+  else{i.type='password';btn.textContent='Show'}
+}
+
+/* ===== AUTH SWITCH ===== */
+const lf=document.getElementById('login');
+const sf=document.getElementById('signup');
+const lb=document.getElementById('lbtn');
+const sb=document.getElementById('sbtn');
+function showLogin(){lf.classList.add('active');sf.classList.remove('active');lb.classList.add('active');sb.classList.remove('active')}
+function showSignup(){sf.classList.add('active');lf.classList.remove('active');sb.classList.add('active');lb.classList.remove('active')}
+
+/* ===== ERROR HANDLING ===== */
+const p=new URLSearchParams(window.location.search);
+const err=p.get('error');
+const signupOK=p.get('signup');
+const box=document.getElementById('errorBox');
+if(err){box.style.display='block';if(err==='invalid')box.innerText='Invalid username or password.';if(err==='missing')box.innerText='Please fill all fields.';if(err==='exists'){box.innerText='Username already exists.';showSignup()}}
+if(signupOK==='success'){box.style.display='block';box.style.background='rgba(34,197,94,.15)';box.style.borderColor='#22c55e';box.style.color='#bbf7d0';box.innerText='Signup successful. Please login.';showLogin()}
+
+/* ===== STARFIELD ===== */
+const c=document.getElementById('stars'),ctx=c.getContext('2d');let w,h,stars=[];
+function resize(){w=c.width=innerWidth;h=c.height=innerHeight}window.onresize=resize;resize();
+for(let i=0;i<250;i++)stars.push({x:Math.random()*w,y:Math.random()*h,z:Math.random()*2});
+(function draw(){ctx.clearRect(0,0,w,h);ctx.fillStyle='white';stars.forEach(s=>{s.y+=s.z;if(s.y>h)s.y=0;ctx.fillRect(s.x,s.y,1.2,1.2)});requestAnimationFrame(draw)})();
+
+/* ===== CURSOR ===== */
+const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'})
+</script>
+
+</body>
+</html>

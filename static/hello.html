@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IdeaJournal – Ideas Deserve a Safe Place</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:Inter,Segoe UI,sans-serif}
+body{background:#05060a;color:#fff;overflow:hidden}
+canvas{position:fixed;inset:0;z-index:0}
+
+.cursor{position:fixed;width:14px;height:14px;border-radius:50%;background:rgba(59,130,246,.9);box-shadow:0 0 30px rgba(59,130,246,.8);pointer-events:none;z-index:999;transform:translate(-50%,-50%)}
+
+.wrap{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:1fr 420px}
+
+.hero{padding:80px;display:flex;flex-direction:column;justify-content:center;gap:30px}
+.hero h1{font-size:78px;line-height:1.05;font-weight:900}
+.hero h1 span{background:linear-gradient(90deg,#60a5fa,#22c55e,#a78bfa);background-size:300% 300%;animation:gradient 6s ease infinite;-webkit-background-clip:text;color:transparent}
+@keyframes gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero p{font-size:20px;opacity:.85;max-width:520px}
+
+.glitch{position:relative}
+.glitch::after{content:attr(data-text);position:absolute;left:2px;top:0;color:#22c55e;opacity:.5;animation:glitch 2s infinite}
+@keyframes glitch{0%,100%{clip-path:inset(0 0 0 0)}50%{clip-path:inset(40% 0 20% 0)}}
+
+.thoughts{margin-top:30px;display:flex;flex-direction:column;gap:18px;max-width:520px}
+.thought{font-size:16px;opacity:.75;padding-left:16px;border-left:3px solid rgba(96,165,250,.6);animation:fadeUp 1s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:.75;transform:translateY(0)}}
+
+.benefits{margin-top:30px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:14px;opacity:.8}
+
+.pod{display:flex;align-items:center;justify-content:center}
+.auth{width:360px;padding:40px;background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border-radius:24px;box-shadow:0 0 120px rgba(59,130,246,.25);position:relative}
+.auth::before{content:"";position:absolute;inset:-2px;border-radius:24px;background:linear-gradient(120deg,#60a5fa,#22c55e,#a78bfa);filter:blur(20px);opacity:.4;z-index:-1}
+
+.switch{display:flex;gap:10px;margin-bottom:20px}
+.switch button{flex:1;padding:12px;border-radius:999px;border:none;cursor:pointer;background:#0b1220;color:#fff;transition:.3s}
+.switch button.active{background:#fff;color:#000}
+
+form{display:none;flex-direction:column;gap:16px}
+form.active{display:flex}
+
+input{padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff}
+
+.password-wrap{position:relative}
+.password-wrap input{width:100%;padding-right:60px}
+.toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:12px;color:#7c7cff}
+
+button.submit{margin-top:10px;padding:14px;border-radius:14px;border:none;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#60a5fa,#22c55e);color:#000}
+
+.trust{font-size:13px;opacity:.7;margin-bottom:14px;text-align:center}
+
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.hero{padding:40px;text-align:center;align-items:center}}
+</style>
+
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="cursor" id="cursor"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1 class="glitch" data-text="IDEAS">IDEAS<br><span>DESERVE A SAFE PLACE</span></h1>
+    <p>
+      IdeaJournal is your private space to capture thoughts, ideas, plans, and moments —
+      encrypted, organized, and preserved forever.
+      <br><br>
+      Write freely. Think deeply. Your ideas stay yours.
+    </p>
+
+```
+<div class="thoughts">
+  <div class="thought">“Most ideas die not because they’re bad — but because they’re forgotten.”</div>
+  <div class="thought">“Your mind is powerful. This is where it stays organized.”</div>
+  <div class="thought">“Write today. Understand yourself tomorrow.”</div>
+</div>
+
+<div class="benefits">
+  <span>🔐 End‑to‑end encrypted ideas</span>
+  <span>🧠 Clean dashboard for clarity</span>
+  <span>📄 Export ideas as PDFs</span>
+  <span>👤 Full control, delete anytime</span>
+</div>
+```
+
+  </div>
+
+  <div class="pod">
+    <div class="auth">
+      <p class="trust">Your data is encrypted. Even we can’t read your ideas.</p>
+
+```
+  <div class="switch">
+    <button class="active" onclick="showLogin()">Login</button>
+    <button onclick="showSignup()">Sign Up</button>
+  </div>
+
+  <form id="login" class="active" method="post" action="/login">
+    <input name="username" placeholder="Username" required>
+    <div class="password-wrap">
+      <input type="password" id="lp" name="password" placeholder="Password" required>
+      <button type="button" class="toggle" onclick="toggle('lp',this)">Show</button>
+    </div>
+    <button class="submit">ENTER</button>
+  </form>
+
+  <form id="signup" method="post" action="/signup">
+    <input name="username" placeholder="Username" required>
+    <div class="password-wrap">
+      <input type="password" id="sp" name="password" placeholder="Password" required>
+      <button type="button" class="toggle" onclick="toggle('sp',this)">Show</button>
+    </div>
+    <button class="submit">CREATE</button>
+  </form>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+function toggle(id,btn){const i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.innerText='Hide'}else{i.type='password';btn.innerText='Show'}}
+function showLogin(){login.classList.add('active');signup.classList.remove('active')}
+function showSignup(){signup.classList.add('active');login.classList.remove('active')}
+
+const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,s=[];
+function rs(){w=c.width=innerWidth;h=c.height=innerHeight}rs();onresize=rs;
+for(let i=0;i<220;i++)s.push({x:Math.random()*w,y:Math.random()*h,z:Math.random()*2});
+(function d(){x.clearRect(0,0,w,h);x.fillStyle='white';s.forEach(o=>{o.y+=o.z;if(o.y>h)o.y=0;x.fillRect(o.x,o.y,1.2,1.2)});requestAnimationFrame(d)})();
+
+const cur=document.getElementById('cursor');addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'})
+</script>
+
+</body>
+</html>

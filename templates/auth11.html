@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IdeaJournal – Mind-Blow Mode</title>
+
+<style>
+/* ================= RESET ================= */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:Inter,Segoe UI,sans-serif}
+
+body{
+  background:#05060a;
+  overflow:hidden;
+  color:#fff;
+}
+
+/* ================= STARFIELD ================= */
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+/* ================= HOLOGRAPHIC CURSOR ================= */
+.cursor{
+  position:fixed;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:rgba(59,130,246,.9);
+  box-shadow:0 0 30px rgba(59,130,246,.8);
+  pointer-events:none;
+  z-index:999;
+  transform:translate(-50%,-50%);
+}
+
+/* ================= MAIN WRAP ================= */
+.wrap{
+  position:relative;
+  z-index:2;
+  height:100%;
+  display:grid;
+  grid-template-columns:1fr 420px;
+}
+
+/* ================= LEFT CINEMATIC ================= */
+.hero{
+  padding:80px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:30px;
+}
+
+.hero h1{
+  font-size:78px;
+  line-height:1.05;
+  font-weight:900;
+}
+
+.hero h1 span{
+  background:linear-gradient(90deg,#60a5fa,#22c55e,#a78bfa);
+  background-size:300% 300%;
+  animation:gradient 6s ease infinite;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+@keyframes gradient{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+.hero p{
+  font-size:20px;
+  opacity:.85;
+  max-width:520px;
+}
+
+.glitch{
+  position:relative;
+}
+
+.glitch::after{
+  content:attr(data-text);
+  position:absolute;
+  left:2px;top:0;
+  color:#22c55e;
+  opacity:.6;
+  animation:glitch 2s infinite;
+}
+
+@keyframes glitch{
+  0%,100%{clip-path:inset(0 0 0 0)}
+  50%{clip-path:inset(40% 0 20% 0)}
+}
+
+/* ================= RIGHT AUTH POD ================= */
+.pod{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.auth{
+  width:360px;
+  padding:40px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(20px);
+  border-radius:24px;
+  box-shadow:0 0 120px rgba(59,130,246,.25);
+  position:relative;
+}
+
+.auth::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:24px;
+  background:linear-gradient(120deg,#60a5fa,#22c55e,#a78bfa);
+  filter:blur(20px);
+  opacity:.4;
+  z-index:-1;
+}
+
+.switch{
+  display:flex;
+  gap:10px;
+  margin-bottom:25px;
+}
+
+.switch button{
+  flex:1;
+  padding:12px;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  background:#0b1220;
+  color:#fff;
+  transition:.3s;
+}
+
+.switch button.active{
+  background:#fff;
+  color:#000;
+}
+
+form{
+  display:none;
+  flex-direction:column;
+  gap:16px;
+  animation:appear .7s cubic-bezier(.16,1,.3,1);
+}
+
+form.active{display:flex}
+
+@keyframes appear{
+  from{opacity:0;transform:translateY(20px) scale(.95)}
+  to{opacity:1;transform:none}
+}
+
+input{
+  padding:14px 16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+}
+
+button.submit{
+  margin-top:10px;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-weight:800;
+  cursor:pointer;
+  background:linear-gradient(135deg,#60a5fa,#22c55e);
+  color:#000;
+}
+
+/* ================= MOBILE ================= */
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .hero{padding:40px;text-align:center;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="cursor" id="cursor"></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <h1 class="glitch" data-text="IDEAS">IDEAS<br><span>ARE IMMORTAL</span></h1>
+    <p>
+      This is not a website.
+      This is a place where thoughts survive time.
+    </p>
+  </div>
+
+  <div class="pod">
+    <div class="auth">
+      <div class="switch">
+        <button id="lbtn" class="active" onclick="login()">Login</button>
+        <button id="sbtn" onclick="signup()">Sign Up</button>
+      </div>
+
+      <form id="login" class="active" method="post" action="/login">
+        <input name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button class="submit">ENTER</button>
+      </form>
+
+      <form id="signup" method="post" action="/signup">
+        <input name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button class="submit">CREATE</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===== FAST REALISTIC 3D SNOWFLAKES ===== */
+/* ===== PNG SPRITE 3D SNOWFALL (FAST & REAL) ===== */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+let W, H;
+function resize(){
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// Load snowflake image
+const snowImg = new Image();
+snowImg.src = "/static/snow.png";
+
+const flakes = [];
+const COUNT = 220; // smooth even on low-end devices
+
+function createFlake(){
+  const depth = Math.random(); // 0 = far, 1 = near
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    size: depth * 18 + 6,        // PNG scaling
+    speed: depth * 2.8 + 0.9,   // faster = realistic
+    drift: Math.random() * 0.8 - 0.4,
+    rot: Math.random() * Math.PI,
+    rotSpeed: (Math.random() - 0.5) * 0.02,
+    depth
+  };
+}
+
+for(let i=0;i<COUNT;i++) flakes.push(createFlake());
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  flakes.forEach(f=>{
+    f.y += f.speed;
+    f.x += f.drift;
+    f.rot += f.rotSpeed;
+
+    // gentle sway
+    f.x += Math.sin(f.y * 0.01) * 0.3;
+
+    if(f.y > H){
+      f.y = -40;
+      f.x = Math.random() * W;
+    }
+
+    // depth-based blur (VERY selective)
+    if(f.depth < 0.2){
+      ctx.filter = "blur(1.5px)";
+    } else if(f.depth > 0.85){
+      ctx.filter = "blur(1px)";
+    } else {
+      ctx.filter = "none";
+    }
+
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.rotate(f.rot);
+    ctx.globalAlpha = 0.9;
+
+    ctx.drawImage(
+      snowImg,
+      -f.size / 2,
+      -f.size / 2,
+      f.size,
+      f.size
+    );
+
+    ctx.restore();
+  });
+
+  ctx.filter = "none";
+  requestAnimationFrame(draw);
+}
+
+// start only after image loads
+snowImg.onload = () => draw();
+
+/* ===== CURSOR ===== */
+const cur=document.getElementById('cursor');
+window.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';
+  cur.style.top=e.clientY+'px';
+});
+
+/* ===== AUTH SWITCH ===== */
+const lf=document.getElementById('login');
+const sf=document.getElementById('signup');
+const lb=document.getElementById('lbtn');
+const sb=document.getElementById('sbtn');
+function login(){lf.classList.add('active');sf.classList.remove('active');lb.classList.add('active');sb.classList.remove('active')}
+function signup(){sf.classList.add('active');lf.classList.remove('active');sb.classList.add('active');lb.classList.remove('active')}
+</script>
+
+</body>
+</html>
